@@ -8,6 +8,7 @@ import io.leangen.graphql.metadata.strategy.value.ValueMapper;
 import org.eclipse.microprofile.graphql.DefaultValue;
 import org.eclipse.microprofile.graphql.Description;
 import org.eclipse.microprofile.graphql.Name;
+import org.eclipse.microprofile.graphql.Query;
 import org.eclipse.microprofile.graphql.Source;
 
 import java.lang.reflect.AnnotatedType;
@@ -27,7 +28,7 @@ public class ArgumentBuilder extends AnnotatedArgumentBuilder {
                 defaultValue(parameter, parameterType, valueMapper),
                 parameter,
                 parameter.isAnnotationPresent(Source.class),
-                builderParams.getEnvironment().inclusionStrategy.includeArgument(parameter, parameterType)
+                isMapped(parameter) && builderParams.getEnvironment().inclusionStrategy.includeArgument(parameter, parameterType)
         );
     }
 
@@ -49,5 +50,9 @@ public class ArgumentBuilder extends AnnotatedArgumentBuilder {
         return Optional.ofNullable(parameter.getAnnotation(DefaultValue.class))
                 .map(def -> valueMapper.fromString(def.value(), parameterType))
                 .orElse(null);
+    }
+
+    private boolean isMapped(Parameter parameter) {
+        return !parameter.isAnnotationPresent(Source.class) || parameter.getDeclaringExecutable().isAnnotationPresent(Query.class);
     }
 }
